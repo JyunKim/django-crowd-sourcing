@@ -1,0 +1,30 @@
+<h1>참여 신청 중인 태스크 목록</h1>
+<p>태스크 이름-참여 상태-참여 신청</p>
+<ul>
+{% for participate in participations %}
+    {% if not participate.admission %}
+    <li>
+        <a href="{% url 'collect:task-detail' participate.task.id %}">{{ participate.task.name }}</a>
+        참여 신청 중
+        <a href="{% url 'collect:delete-participation' participate.id %}">취소</a>
+    </li>
+    {% endif %}
+{% endfor %}
+</ul>
+
+<h1>내 태스크 목록</h1>
+<p>태스크 이름-제출한 파일 수-저장된 tuple 수-상세조회</p>
+<ul>
+{% for participate in participations %}
+    {% if participate.admission %}
+    <li>
+        <a href="{% url 'collect:task-detail' participate.task.id %}">{{ participate.task.name }}</a>
+        {% for parsedfile in participate.task.parsedfiles.all %}
+            {% if parsedfile.submitter == user.account %}
+                {{ parsedfile.submit_count }}
+            {% endif %}
+        {% endfor %}
+    </li>
+    {% endif %}
+{% endfor %}
+</ul>

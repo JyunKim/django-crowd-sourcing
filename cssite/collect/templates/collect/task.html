@@ -1,0 +1,9 @@
+<h1>태스크 목록</h1>
+<p>태스크 이름    참여 상태    참여 신청</p>
+<ul>
+{% for task in task_list %}
+    {% if task.activation_state %}
+        <li><a href="{% url 'collect:task-detail' task.id %}">{{ task.name }}</a></li>
+    {% endif %}
+{% endfor %}
+</ul>
