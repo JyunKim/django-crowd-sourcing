@@ -1,3 +1,4 @@
+from django import forms
 from django.db import models
 from django.contrib.auth.models import User 
 from django.db.models.signals import post_save
@@ -50,6 +51,11 @@ class Participation(models.Model):
     submit_count = models.IntegerField('제출 횟수', default=0)
 
 
+def grading_score_validator(value):
+    if value < 0 or value > 10:
+        raise forms.ValidationError('0 ~ 10 사이의 숫자를 입력해주세요.')
+
+
 class ParsedFile(models.Model):
     submitter = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='parsed_submits', verbose_name='제출자')
     grader = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='parsed_grades', verbose_name='평가자', null=True, blank=True)
@@ -61,9 +67,10 @@ class ParsedFile(models.Model):
     total_tuple = models.IntegerField('전체 튜플 수')
     duplicated_tuple = models.IntegerField('중복 튜플 수')
     null_ratio = models.FloatField('null 비율')
-    grading_score = models.IntegerField('평가 점수', null=True, blank=True)
+    grading_score = models.IntegerField('평가 점수', null=True, blank=True, validators=[grading_score_validator])
     pass_state = models.BooleanField('패스 여부', null=True, blank=True)
     grading_end_date = models.DateField('평가 종료 날짜')
+    grade_date = models.DateField('평가 날짜', auto_now=True)
 
     def __str__(self):
         return self.directory

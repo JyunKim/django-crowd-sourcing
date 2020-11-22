@@ -1,0 +1,13 @@
+<h1>평가된 파일 목록</h1>
+<ul>
+{% for parsedfile in parsedfiles %}
+    <li>
+        {{ parsedfile.task.name }} {{ parsedfile.directory }} {{ parsedfile.grade_date }} {{ parsedfile.grading_score }}
+        {% if parsedfile.pass_state %}
+            Pass
+        {% else %}
+            NonPass
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>

@@ -7,3 +7,10 @@ class LoginForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'password']
+
+
+class GradeForm(forms.ModelForm):
+    pass_state = forms.BooleanField(required=False)
+    class Meta:
+        model = ParsedFile
+        fields = ['grading_score', 'pass_state']

@@ -1,9 +1,6 @@
-<h2>회원가입</h2>
-<strong>{{ error }}</strong>
-<form action="{% url 'collect:signup' %}" method="post">
+<h2>회원 정보 수정</h2>
+<form action="{% url 'collect:update' user.id %}" method="post">
     {% csrf_token %}
-    아이디:
-    <input type="text" name="username"><br>
     비밀번호:
     <input type="password" name="password1"><br>
     비밀번호 확인:
@@ -21,10 +18,5 @@
     </select><br>
     주소:
     <input type="text" name="address"><br>
-    역할:
-    <select name="role">
-        <option value="제출자">제출자</option>
-        <option value="평가자">평가자</option>
-    </select><br><br>
-    <input type="submit" value="회원가입">
+    <input type="submit" value="수정">
 </form>
