@@ -20,6 +20,7 @@
     <li>
         <a href="{% url 'collect:task-detail' participate.task.id %}">{{ participate.task.name }}</a>
         {{ participate.submit_count }}
+        <a href="{% url 'collect:parsedfiles' participate.task.id %}">상세조회</a>
     </li>
     {% endif %}
 {% endfor %}

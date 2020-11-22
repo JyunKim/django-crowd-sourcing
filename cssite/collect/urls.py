@@ -13,4 +13,5 @@ urlpatterns = [
     path('participations/', views.ParticipationList.as_view(), name='participations'),
     path('tasks/<int:pk>/create/', views.create_participation, name='create-participation'),
     path('participations/<int:pk>/delete/', views.delete_participation, name='delete-participation'),
+    path('tasks/<int:pk>/parsedfiles/', views.ParsedfileList.as_view(), name='parsedfiles'),
 ]

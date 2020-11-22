@@ -73,7 +73,7 @@ class TaskDetail(generic.DetailView):
 
 def create_participation(request, pk):
     user = request.user
-    task = Task.objects.get(pk=pk)
+    task = get_object_or_404(Task, pk=pk)
     participation = Participation(account=user.account, task=task)
     participation.save()
     return redirect(reverse('collect:participations'))
@@ -87,6 +87,23 @@ class ParticipationList(View):
 
 
 def delete_participation(request, pk):
-    participation = Participation.objects.get(pk=pk)
+    participation = get_object_or_404(Participation, pk=pk)
     participation.delete()
     return redirect(reverse('collect:participations'))
+
+
+class ParsedfileList(View):
+    def get(self, request, pk):
+        user = request.user
+        task = get_object_or_404(Task, pk=pk)
+        parsedfile_list = []
+
+        for parsedfile in user.account.parsed_submits.all():
+            if parsedfile in task.parsedfiles.all():
+                parsedfile_list.append(parsedfile)
+        
+        context = {
+            'task': task,
+            'parsedfile_list': parsedfile_list
+        }
+        return render(request, 'collect/parsedfile.html', context)

@@ -1,0 +1,11 @@
+<h1>내가 제출한 파일 목록</h1>
+태스크 이름: {{ task.name }}
+<p>파일 이름-회차-기간-평가 점수-패스 여부</p>
+<ul>
+{% for parsedfile in parsedfile_list %}
+    <li>
+    {{ parsedfile.directory }} {{ parsedfile.submit_number }} {{ parsedfile.start_date }}~{{ parsedfile.end_date }}
+    {{ parsedfile.grading_score }} {{ parsedfile.pass_state }}
+    </li>
+{% endfor %}
+</ul>
