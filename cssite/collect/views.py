@@ -8,33 +8,8 @@ from .models import Account, Task, Participation, ParsedFile, MappingInfo
 from .forms import LoginForm
 
 
-class TaskList(generic.ListView):
-    model = Task
-    context_object_name = 'task_list'
-    template_name = 'collect/task.html'
-
-
-class TaskDetail(generic.DetailView):
-    model = Task
-    context_object_name = 'task'
-    template_name = 'collect/task_detail.html'
-
-
-class ParticipationList(View):
-    def get(self, request):
-        user = request.user
-        participations = user.account.participations.all()
-        context = {
-            'participations': participations,
-            'user': user
-        }
-        return render(request, 'collect/participation.html', context)
-
-
-def delete_participation(request, pk):
-    participation = Participation.objects.get(pk=pk)
-    participation.delete()
-    return redirect(reverse('collect:participations'))
+def index(request):
+    return render(request, 'collect/index.html')
 
 
 def signup(request):
@@ -43,12 +18,21 @@ def signup(request):
             user = User.objects.create_user(
                 username=request.POST["username"],
                 password=request.POST["password1"])
-            nickname = request.POST["nickname"]
-            profile = Profile(user=user, nickname=nickname)
-            profile.save()
-            auth.login(request,user)
-            return redirect(reverse('collect:index'))
-    return render(request, 'account/signup.html')
+            account = Account(
+                user=user,
+                name=request.POST["name"],
+                contact = request.POST["contact"],
+                birth = request.POST["birth"],
+                gender = request.POST["gender"],
+                address = request.POST["address"],
+                role = request.POST["role"])
+            account.save()
+            auth.login(request, user)
+            if account.role == '제출자':
+                return redirect(reverse('collect:tasks'))
+            elif account.role == '평가자':
+                return redirect(reverse('collect:index'))
+    return render(request, 'collect/signup.html')
 
 
 def login(request):
@@ -62,7 +46,7 @@ def login(request):
             if user.account.role == '제출자':
                 return redirect(reverse('collect:tasks'))
             elif user.account.role == '평가자':
-                return redirect(reverse(''))
+                return redirect(reverse('collect:index'))
         else:
             return HttpResponse('로그인 실패. 다시 시도 해보세요.')
     else:
@@ -73,3 +57,36 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return redirect(reverse('collect:index'))
+
+
+class TaskList(generic.ListView):
+    model = Task
+    context_object_name = 'task_list'
+    template_name = 'collect/task.html'
+
+
+class TaskDetail(generic.DetailView):
+    model = Task
+    context_object_name = 'task'
+    template_name = 'collect/task_detail.html'
+
+
+def create_participation(request, pk):
+    user = request.user
+    task = Task.objects.get(pk=pk)
+    participation = Participation(account=user.account, task=task)
+    participation.save()
+    return redirect(reverse('collect:participations'))
+
+
+class ParticipationList(View):
+    def get(self, request):
+        user = request.user
+        participations = user.account.participations.all()
+        return render(request, 'collect/participation.html', {'participations': participations})
+
+
+def delete_participation(request, pk):
+    participation = Participation.objects.get(pk=pk)
+    participation.delete()
+    return redirect(reverse('collect:participations'))

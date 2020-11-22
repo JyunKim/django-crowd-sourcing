@@ -19,11 +19,7 @@
     {% if participate.admission %}
     <li>
         <a href="{% url 'collect:task-detail' participate.task.id %}">{{ participate.task.name }}</a>
-        {% for parsedfile in participate.task.parsedfiles.all %}
-            {% if parsedfile.submitter == user.account %}
-                {{ parsedfile.submit_count }}
-            {% endif %}
-        {% endfor %}
+        {{ participate.submit_count }}
     </li>
     {% endif %}
 {% endfor %}

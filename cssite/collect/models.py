@@ -29,20 +29,6 @@ class Account(models.Model):
         return self.role
     
 
-@receiver(post_save, sender=User)
-def create_user_account(sender, instance, created, **kwargs):
-    if created:
-        Account.objects.create(user=instance)
-
-
-@receiver(post_save, sender=User)
-def save_user_account(sender, instance, **kwargs):
-    try:
-        instance.account.save()
-    except ObjectDoesNotExist:
-        Account.objects.create(user=instance)
-
-    
 class Task(models.Model):
     name = models.CharField('태스크 이름', max_length=45, unique=True)
     minimal_upload_frequency = models.CharField('최소 업로드 주기', max_length=45)
@@ -60,7 +46,8 @@ class Participation(models.Model):
 
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='participations', verbose_name='제출자')
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='participations', verbose_name='태스크')
-    admission = models.BooleanField('승인 상태', null=True, blank=True)
+    admission = models.BooleanField('승인 상태', default=False)
+    submit_count = models.IntegerField('제출 횟수', default=0)
 
 
 class ParsedFile(models.Model):
@@ -68,7 +55,7 @@ class ParsedFile(models.Model):
     grader = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='parsed_grades', verbose_name='평가자', null=True, blank=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='parsedfiles', verbose_name='태스크')
     directory = models.CharField('파일 경로', max_length=200)
-    submit_count = models.IntegerField('제출 회차')
+    submit_number = models.IntegerField('제출 회차')
     start_date = models.DateField('시작 날짜')
     end_date = models.DateField('종료 날짜')
     total_tuple = models.IntegerField('전체 튜플 수')
