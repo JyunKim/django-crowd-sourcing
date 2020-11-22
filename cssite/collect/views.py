@@ -8,10 +8,12 @@ from .models import Account, Task, Participation, ParsedFile, MappingInfo
 from .forms import LoginForm
 
 
+# 홈
 def index(request):
     return render(request, 'collect/index.html')
 
 
+# 회원가입
 def signup(request):
     if request.method == "POST":
         if request.POST["password1"] == request.POST["password2"]:
@@ -35,6 +37,7 @@ def signup(request):
     return render(request, 'collect/signup.html')
 
 
+# 로그인
 def login(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -54,23 +57,27 @@ def login(request):
         return render(request, 'collect/login.html', {'form': form})
 
 
+# 로그아웃
 def logout(request):
     auth.logout(request)
     return redirect(reverse('collect:index'))
 
 
+# 태스크 목록
 class TaskList(generic.ListView):
     model = Task
     context_object_name = 'task_list'
     template_name = 'collect/task.html'
 
 
+# 태스크 상세 정보
 class TaskDetail(generic.DetailView):
     model = Task
     context_object_name = 'task'
     template_name = 'collect/task_detail.html'
 
 
+# 태스크 참여
 def create_participation(request, pk):
     user = request.user
     task = get_object_or_404(Task, pk=pk)
@@ -79,6 +86,7 @@ def create_participation(request, pk):
     return redirect(reverse('collect:participations'))
 
 
+# 참여 중인 태스크 목록
 class ParticipationList(View):
     def get(self, request):
         user = request.user
@@ -86,24 +94,23 @@ class ParticipationList(View):
         return render(request, 'collect/participation.html', {'participations': participations})
 
 
+# 태스크 참여 취소
 def delete_participation(request, pk):
     participation = get_object_or_404(Participation, pk=pk)
     participation.delete()
     return redirect(reverse('collect:participations'))
 
 
+# 제출한 파일 목록
 class ParsedfileList(View):
     def get(self, request, pk):
         user = request.user
         task = get_object_or_404(Task, pk=pk)
-        parsedfile_list = []
-
-        for parsedfile in user.account.parsed_submits.all():
-            if parsedfile in task.parsedfiles.all():
-                parsedfile_list.append(parsedfile)
-        
+        parsedfile_list = user.account.parsed_submits.filter(task=task)
+        total_tuple = sum(parsedfile.total_tuple for parsedfile in parsedfile_list)
         context = {
             'task': task,
-            'parsedfile_list': parsedfile_list
+            'parsedfile_list': parsedfile_list,
+            'total_tuple': total_tuple
         }
         return render(request, 'collect/parsedfile.html', context)
