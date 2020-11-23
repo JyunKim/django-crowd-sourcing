@@ -44,7 +44,6 @@ def signup(request):
 # 로그인
 def login(request):
     if request.method == "POST":
-        form = LoginForm(request.POST)
         username = request.POST['username']
         password = request.POST['password']
         user = auth.authenticate(request, username=username, password=password)
@@ -54,16 +53,29 @@ def login(request):
                 return redirect(reverse('collect:tasks'))
             elif user.account.role == '평가자':
                 return redirect(reverse('collect:allocated-parsedfiles'))
+            else:
+                return redirect(reverse('collect:users'))
         return HttpResponse('로그인 실패. 다시 시도 해보세요.')
     else:
         form = LoginForm()
-        return render(request, 'collect/login.html', {'form': form})
+        return render(request, 'collect/login.html', {'form':form})
 
 
 # 로그아웃
 def logout(request):
     auth.logout(request)
     return redirect(reverse('collect:index'))
+
+
+# 정보 조회
+def userinfo(request, pk):
+    user = request.user
+    account = user.account
+    context = {
+        'user': user,
+        'account': account
+    }
+    return render(request, 'collect/userinfo.html', context)
 
 
 # 회원 정보 수정
@@ -95,10 +107,17 @@ def delete(request, pk):
 
 
 # 태스크 목록
-class TaskList(generic.ListView):
-    model = Task
-    context_object_name = 'task_list'
-    template_name = 'collect/task.html'
+class TaskList(View):
+    def get(self, request):
+        account = request.user.account
+        task_list = Task.objects.all()
+        participations = Participation.objects.filter(account=account)
+        participate_tasks = [participation.task for participation in participations]
+        context = {
+            'task_list': task_list,
+            'participate_tasks': participate_tasks
+        }
+        return render(request, 'collect/task.html', context)
 
 
 # 태스크 상세 정보
@@ -125,11 +144,17 @@ class ParticipationList(View):
         return render(request, 'collect/participation.html', {'participations': participations})
 
 
-# 태스크 참여 취소
+# 태스크 참여 취소, 관리자 승인
 def delete_participation(request, pk):
-    participation = get_object_or_404(Participation, pk=pk)
-    participation.delete()
-    return redirect(reverse('collect:participations'))
+    if request.user.is_superuser:
+        participation = get_object_or_404(Participation, pk=pk)
+        participation.admission = True
+        participation.save()
+        return redirect(reverse('collect:users'))
+    else:
+        participation = get_object_or_404(Participation, pk=pk)
+        participation.delete()
+        return redirect(reverse('collect:participations'))
 
 
 # 제출한 파일 목록
@@ -192,3 +217,44 @@ def grade_parsedfile(request, pk):
             'parsedfile': parsedfile
         }
         return render(request, 'collect/grade.html', context)
+
+# 유저 검색
+class UserList(View):
+    def get(self, request):
+        tasks = Task.objects.all()
+        accounts = Account.objects.all()
+        username = request.GET.get('username')
+        gender = request.GET.get('gender')
+        role = request.GET.get('role')
+        birth1 = request.GET.get('birth1')
+        birth2 = request.GET.get('birth2')
+        taskname = request.GET.get('taskname')
+        if username:
+            accounts = accounts.filter(user__username__contains=username)
+        if gender:
+            accounts = accounts.filter(gender__exact=gender)
+        if role:
+            accounts = accounts.filter(role__exact=role)
+        if birth1 and birth2:
+            accounts = accounts.filter(birth__range=(birth1, birth2))
+        if taskname:
+            task = Task.objects.get(name=taskname)
+            accounts = accounts.filter(participations__in=task.participations.all())
+        context = {
+            'accounts': accounts,
+            'tasks': tasks
+        }
+        return render(request, 'collect/userlist.html', context)
+
+
+# 유저 상세 정보
+class UserDetail(View):
+    def get(self, request, pk):
+        user = User.objects.get(pk=pk)
+        if user.account.role == '제출자':
+            participations = user.account.participations.all()
+            return render(request, 'collect/participation.html', {'participations': participations})
+        elif user.account.role == '평가자':
+            user = User.objects.get(pk=pk)
+            parsedfiles = user.account.parsed_grades.filter(grading_score__isnull=False)
+            return render(request, 'collect/graded_parsedfile.html', {'parsedfiles': parsedfiles})

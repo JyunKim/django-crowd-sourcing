@@ -5,7 +5,11 @@
     {% if task.activation_state %}
         <li>
             <a href="{% url 'collect:task-detail' task.id %}">{{ task.name }}</a>
-            <a href="{% url 'collect:create-participation' task.id %}">참여 신청</a>
+            {% if task not in participate_tasks %}
+                <a href="{% url 'collect:create-participation' task.id %}">참여 신청</a>
+            {% else %}
+                신청 완료
+            {% endif %}
         </li>
     {% endif %}
 {% endfor %}

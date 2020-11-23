@@ -6,13 +6,17 @@
     <li>
         <a href="{% url 'collect:task-detail' participate.task.id %}">{{ participate.task.name }}</a>
         참여 신청 중
-        <a href="{% url 'collect:delete-participation' participate.id %}">취소</a>
+        {% if request.user.is_superuser %}
+            <a href="{% url 'collect:delete-participation' participate.id %}">승인</a>
+        {% else %}
+            <a href="{% url 'collect:delete-participation' participate.id %}">취소</a>
+        {% endif %}
     </li>
     {% endif %}
 {% endfor %}
 </ul>
 
-<h1>내 태스크 목록</h1>
+<h1>참여 중인 태스크 목록</h1>
 <p>태스크 이름-제출한 파일 수-상세조회</p>
 <ul>
 {% for participate in participations %}
@@ -20,7 +24,7 @@
     <li>
         <a href="{% url 'collect:task-detail' participate.task.id %}">{{ participate.task.name }}</a>
         {{ participate.submit_count }}
-        <a href="{% url 'collect:parsedfiles' participate.task.id %}">상세조회</a>
+        <a href="{% url 'collect:submitted-parsedfiles' participate.task.id %}">상세조회</a>
     </li>
     {% endif %}
 {% endfor %}

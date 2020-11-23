@@ -8,6 +8,7 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('login/', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
+    path('userinfo/', views.userinfo, name='userinfo'),
     path('update/<int:pk>/', views.update, name='update'),
     path('delete/<int:pk>/', views.delete, name='delete'),
     path('tasks/', views.TaskList.as_view(), name='tasks'),
@@ -19,4 +20,6 @@ urlpatterns = [
     path('graded-parsedfiles/', views.GradedfileList.as_view(), name='graded-parsedfiles'),
     path('allocated-parsedfiles/', views.AllocatedfileList.as_view(), name='allocated-parsedfiles'),
     path('allocated-parsedfiles/<int:pk>/', views.grade_parsedfile, name='grade-parsedfile'),
+    path('users/', views.UserList.as_view(), name='users'),
+    path('users/<int:pk>', views.UserDetail.as_view(), name='user-detail'),
 ]
