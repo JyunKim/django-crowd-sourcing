@@ -28,7 +28,7 @@
 역할 ID 생년월일 성별 참여중인태스크 상세조회
 <ul>
     {% for account in accounts %}
-        {% if account.role %}
+        {% if account.role != '관리자' %}
             <li>
             {{ account.role }} {{ account.user.username }} {{ account.birth }} {{ account.gender }}
             {% for participation in account.participations.all %}
